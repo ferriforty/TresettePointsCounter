@@ -1,13 +1,14 @@
 package com.example.pointscounter.model
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 
 interface Model {
     fun getTeam1Points(): Int
     fun getTeam2Points(): Int
 }
 
-fun modelOf(grid: Array<Array<MutableState<Int>>>): Model {
+fun modelOf(grid: SnapshotStateList<Array<MutableState<Int>>>): Model {
     return object : Model {
         override fun getTeam1Points(): Int {
             var sum = 0

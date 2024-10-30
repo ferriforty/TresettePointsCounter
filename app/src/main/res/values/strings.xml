@@ -21,4 +21,6 @@
     <string name="points">Punti</string>
     <string name="extra_points">Accuso</string>
     <string name="new_game">Nuova partita</string>
+    <string name="new_col">+</string>
+    <string name="del_col">-</string>
 </resources>

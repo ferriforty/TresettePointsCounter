@@ -24,7 +24,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -32,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,11 +53,18 @@ import java.lang.NumberFormatException
 
 const val DEFAULT_VALUE = 0
 const val GRID_LENGTH = 8
-val inputGrid = Array(GRID_LENGTH) { _ -> Array(4) { _ -> mutableStateOf(DEFAULT_VALUE) } }
+val inputGrid = mutableStateListOf<Array<MutableState<Int>>>()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        for (i in 0 until GRID_LENGTH) {
+            inputGrid.add(arrayOf(mutableStateOf(DEFAULT_VALUE),
+                mutableStateOf(DEFAULT_VALUE),
+                mutableStateOf(DEFAULT_VALUE),
+                mutableStateOf(DEFAULT_VALUE)))
+        }
         setContent {
             TipTimeTheme {
                 // A surface container using the 'background' color from the theme
@@ -59,7 +72,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PointsCounterLayout(GRID_LENGTH, modelOf(inputGrid), modifier = Modifier.padding(0.dp, 10.dp))
+
+                    PointsCounterLayout(inputGrid.size, modelOf(inputGrid), modifier = Modifier.padding(0.dp, 10.dp))
                 }
             }
         }
@@ -68,11 +82,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PointsCounterLayout(length: Int, model: Model, modifier: Modifier = Modifier) {
+    val scrollState = rememberScrollState()
 
-    Column {
+    Column(modifier = Modifier.verticalScroll(scrollState)) {
         Row(
             modifier = modifier,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(modifier = Modifier.weight(1F)) {
                 TeamText(text = stringResource(R.string.team_1), modifier = Modifier.fillMaxWidth())
@@ -115,7 +130,11 @@ fun PointsCounterLayout(length: Int, model: Model, modifier: Modifier = Modifier
                 }
             }
         }
-        ClearGridButton(modifier = Modifier.padding(10.dp))
+        Row {
+            ClearGridButton(modifier = Modifier.padding(10.dp))
+            NewColButton(modifier = Modifier.padding(10.dp))
+            DelColButton(modifier = Modifier.padding(10.dp))
+        }
     }
 }
 
@@ -192,6 +211,34 @@ fun PointsSumText(modifier: Modifier = Modifier, sum: () -> Int) {
 }
 
 @Composable
+fun NewColButton(modifier: Modifier = Modifier) {
+    Button(
+        onClick = {
+            inputGrid.add(arrayOf(mutableStateOf(DEFAULT_VALUE),
+                mutableStateOf(DEFAULT_VALUE),
+                mutableStateOf(DEFAULT_VALUE),
+                mutableStateOf(DEFAULT_VALUE)))
+        },
+        modifier = modifier
+    ) {
+        Text(text = stringResource(id = R.string.new_col))
+    }
+}
+
+@Composable
+fun DelColButton(modifier: Modifier = Modifier) {
+    Button(
+        enabled = inputGrid.size > 6,
+        onClick = {
+            inputGrid.removeLast()
+        },
+        modifier = modifier
+    ) {
+        Text(text = stringResource(id = R.string.del_col))
+    }
+}
+
+@Composable
 fun ClearGridButton(modifier: Modifier = Modifier) {
     Button(
         onClick = {
@@ -212,6 +259,6 @@ fun ClearGridButton(modifier: Modifier = Modifier) {
 @Composable
 fun TipTimeLayoutPreview() {
     TipTimeTheme {
-        PointsCounterLayout(GRID_LENGTH, modelOf(inputGrid), Modifier.padding(0.dp, 10.dp))
+        PointsCounterLayout(inputGrid.size, modelOf(inputGrid), Modifier.padding(0.dp, 10.dp))
     }
 }
